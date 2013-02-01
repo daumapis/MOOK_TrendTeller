@@ -52,7 +52,7 @@ public class TTMainActivity extends SherlockFragmentActivity implements
 
 	private void searchQQ(String keyword) {
 		InputStream is = null;
-		String url = "http://211.43.193.21/examples/";
+		String url = "http://211.43.193.21/examples/search/";
 		HttpClient httpclient = new DefaultHttpClient();
 		try {
 			ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
@@ -139,6 +139,7 @@ public class TTMainActivity extends SherlockFragmentActivity implements
 					public void run() {
 						try {
 							searchQQ(keyword);
+							Log.d("Ryukw82",keyword);
 						} catch (Exception e) {
 
 						}
@@ -223,8 +224,11 @@ public class TTMainActivity extends SherlockFragmentActivity implements
 
 	@Override
 	public void onBackPressed() {
-		HangeulTTS.stop();
-		super.onBackPressed();
+		if (HangeulTTS.isTTSSpeaking()) {
+			HangeulTTS.stop();
+		} else {
+			super.onBackPressed();
+		}
 	}
 	
 	

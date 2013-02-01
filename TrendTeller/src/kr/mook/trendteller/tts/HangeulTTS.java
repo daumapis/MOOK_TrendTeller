@@ -53,7 +53,7 @@ public class HangeulTTS {
 		return builder.toString();
 	}
 	
-	private static boolean isTTSSpeaking() {
+	public static boolean isTTSSpeaking() {
 		return (tts != null)?tts.isSpeaking():false;
 	}
 	
