@@ -2,8 +2,6 @@ package kr.mook.trendteller.tts;
 
 import java.util.HashMap;
 
-import android.util.Log;
-
 public class HangeulConvert {
 
 	public static String convert(String hangul) {
@@ -56,7 +54,6 @@ public class HangeulConvert {
 				alpha.append((String) JONGSUNG_KEY_MAP.get(new Character(
 						JONGSUNG[jongsung])));
 		}
-		Log.d("Ryukw82", alpha.toString());
 		return alpha.toString();
 	}
 
