@@ -1,0 +1,58 @@
+package kr.mook.trendteller.tts;
+
+import java.util.Locale;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeech.OnInitListener;
+
+public class HangeulTTS {
+	
+	private static TextToSpeech tts;
+	
+	public static void read(Context context, String title, String content) {
+		
+		speak (context, title+"     "+content);
+		
+	}
+
+	private static void speak(Context context, final String str) {
+		
+		tts = new TextToSpeech(context, new OnInitListener() {
+
+			@Override
+			public void onInit(int status) {
+
+				tts.setLanguage(Locale.KOREA);
+
+				if (tts.isLanguageAvailable(Locale.KOREAN) == TextToSpeech.LANG_NOT_SUPPORTED) {
+					String fixedStr = HangeulConvert.convert(appendSpaceToString(str));
+					tts.speak(fixedStr, TextToSpeech.QUEUE_FLUSH, null);
+				} else {
+					tts.speak(str, TextToSpeech.QUEUE_ADD, null);
+				}
+
+			}
+		});
+		
+		
+	}
+	
+	private static String appendSpaceToString(String str) {
+		int N = str.length();
+		StringBuilder builder = new StringBuilder("");
+		
+		for (int i=0; i<N; i++) {
+			builder.append(str.charAt(i));
+			builder.append(" ");
+		}
+		
+		return builder.toString();
+	}
+	
+	private static boolean isTTSSpeaking() {
+		return (tts != null)?tts.isSpeaking():false;
+	}
+
+}

@@ -51,6 +51,7 @@ public class TTMainActivity extends SherlockFragmentActivity implements OnQueryT
 		searchView = new SearchView(getSupportActionBar().getThemedContext());
 		searchView.setQueryHint("Search for keyword…");
 		searchView.setOnQueryTextListener(this);
+		registerForContextMenu(searchView);
 		
 		menu.add("검색")
 			.setIcon(R.drawable.ic_search)
