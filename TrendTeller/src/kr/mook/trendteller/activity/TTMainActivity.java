@@ -1,11 +1,40 @@
 package kr.mook.trendteller.activity;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import kr.mook.trendteller.R;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -15,63 +44,230 @@ import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.widget.SearchView;
 import com.actionbarsherlock.widget.SearchView.OnQueryTextListener;
 
-public class TTMainActivity extends SherlockFragmentActivity implements OnQueryTextListener {
+public class TTMainActivity extends SherlockFragmentActivity implements
+		OnQueryTextListener {
 
 	private static final String SEARCH_KEYWORD = "searchKeyword";
-	SearchView searchView;
-	
+	private SearchView searchView;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
+
 		refreshListView();
 	}
 
-	private void refreshListView() {
-		SharedPreferences prefs = getSharedPreferences(SEARCH_KEYWORD, MODE_PRIVATE);
+	private void searchQ(String keyword) throws IOException,
+			ParserConfigurationException, SAXException {
+		// 링크 주소 만들기
+		String requestUrl = "http://apis.daum.net/search/web";
+		requestUrl += "?apikey=" + "85316af50841e4fef45c329e8c4bb7ab9fdbbf36"; // 발급된
+																				// 키
+		requestUrl += "&q=" + keyword; // 검색어
+		URL url = new URL(requestUrl);
 
-		ArrayList<String> list = new ArrayList<String>();
+		// API 요청 및 반환
+		URLConnection conn = url.openConnection();
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		Document doc = builder.parse(conn.getInputStream());
+
+		StringBuilder sb = new StringBuilder();
+		// channel노드를 객체화 하기
+		Node node = doc.getElementsByTagName("channel").item(0);
+		for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+			Node channelNode = node.getChildNodes().item(i);
+			String nodeName = channelNode.getNodeName();
+			if ("description".equals(nodeName)) {
+				// sb.append(channelNode.getTextContent());
+			} else if ("item".equals(nodeName)) {
+				// item노드를 객체화 하기
+				for (int j = 0; j < channelNode.getChildNodes().getLength(); j++) {
+					Node itemNode = channelNode.getChildNodes().item(j);
+					if ("description".equals(itemNode.getNodeName()))
+						sb.append(itemNode.getTextContent());
+					System.out.println(itemNode.getTextContent());
+				}
+			}
+		}
+		System.out.println(sb.toString());
+	}
+
+	private void searchQQ(String keyword) {
+		InputStream is = null;
+		String url = "http://192.168.170.98:8080/examples/";
+		HttpClient httpclient = new DefaultHttpClient();
+		try {
+			ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+			nameValuePairs.add(new BasicNameValuePair("q", keyword));
+			// nameValuePairs.add(new BasicNameValuePair("apiKey",
+			// "094a7f309318e5616f4cdc431cfd1c27118426ad"));
+			// nameValuePairs.add(new BasicNameValuePair("apiKey",
+			// "DAUM_SEARCH_DEMO_APIKEY"));
+
+			String result = "";
+			HttpParams params = httpclient.getParams();
+			HttpConnectionParams.setConnectionTimeout(params, 5000);
+			HttpConnectionParams.setSoTimeout(params, 5000);
+
+			HttpPost httppost = new HttpPost(url);
+			UrlEncodedFormEntity entityRequest = new UrlEncodedFormEntity(
+					nameValuePairs, "UTF-8");
+			httppost.setEntity(entityRequest);
+
+			HttpResponse response = httpclient.execute(httppost);
+			HttpEntity entityResponse = response.getEntity();
+			is = entityResponse.getContent();
+
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					is, "UTF-8"), 8);
+			StringBuilder sb = new StringBuilder();
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				sb.append(line).append("\n");
+			}
+			is.close();
+			result = sb.toString();
+			System.out.println(result);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			httpclient.getConnectionManager().shutdown();
+		}
+
+	}
+
+	private void searchQuery(String keyword) {
+		InputStream is = null;
+		String url = "http://apis.daum.net/search/web";
+		HttpClient httpclient = new DefaultHttpClient();
+		try {
+			ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+			nameValuePairs.add(new BasicNameValuePair("q", keyword));
+			nameValuePairs.add(new BasicNameValuePair("apiKey",
+					"094a7f309318e5616f4cdc431cfd1c27118426ad"));
+			// nameValuePairs.add(new BasicNameValuePair("apiKey",
+			// "DAUM_SEARCH_DEMO_APIKEY"));
+
+			String result = "";
+			HttpParams params = httpclient.getParams();
+			HttpConnectionParams.setConnectionTimeout(params, 5000);
+			HttpConnectionParams.setSoTimeout(params, 5000);
+
+			HttpPost httppost = new HttpPost(url);
+			UrlEncodedFormEntity entityRequest = new UrlEncodedFormEntity(
+					nameValuePairs, "UTF-8");
+			httppost.setEntity(entityRequest);
+
+			HttpResponse response = httpclient.execute(httppost);
+			HttpEntity entityResponse = response.getEntity();
+			is = entityResponse.getContent();
+
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					is, "UTF-8"), 8);
+			StringBuilder sb = new StringBuilder();
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				sb.append(line).append("\n");
+			}
+			is.close();
+			result = sb.toString();
+			System.out.println(result);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			httpclient.getConnectionManager().shutdown();
+		}
+	}
+
+	private void refreshListView() {
+		SharedPreferences prefs = getSharedPreferences(SEARCH_KEYWORD,
+				MODE_PRIVATE);
+
+		final List<String> list = new ArrayList<String>();
 		for (String keyword : prefs.getAll().keySet()) {
 			list.add(keyword);
 		}
-		
-		Collections.sort(list);
-		
-		ArrayAdapter<String> adapter;
-        adapter = new ArrayAdapter<String>(this,  android.R.layout.simple_list_item_1, list);
 
-        ListView listView = (ListView)findViewById(R.id.list);
-        listView.setAdapter(adapter);
+		Collections.sort(list);
+
+		ArrayAdapter<String> adapter;
+		adapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1, list);
+
+		ListView listView = (ListView) findViewById(R.id.list);
+		listView.setAdapter(adapter);
+
+		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				final String keyword = list.get(position);
+				new Thread(new Runnable() {
+
+					@Override
+					public void run() {
+						try {
+							System.out.println("aaa");
+							Log.d("aaaa", "aaaa");
+							searchQQ(keyword);
+						} catch (Exception e) {
+
+						}
+					}
+
+				}).start();
+			}
+
+		});
+
+		listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				SharedPreferences prefs = getSharedPreferences(SEARCH_KEYWORD,
+						MODE_PRIVATE);
+				SharedPreferences.Editor editor = prefs.edit();
+				editor.remove(list.get(position));
+				editor.commit();
+				refreshListView();
+
+				return false;
+			}
+		});
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		
+
 		searchView = new SearchView(getSupportActionBar().getThemedContext());
 		searchView.setQueryHint("Search for keyword…");
 		searchView.setOnQueryTextListener(this);
-		registerForContextMenu(searchView);
-		
+
 		menu.add("검색")
-			.setIcon(R.drawable.ic_search)
-        	.setActionView(searchView)
-        	.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
-		
+				.setIcon(R.drawable.ic_search)
+				.setActionView(searchView)
+				.setShowAsAction(
+						MenuItem.SHOW_AS_ACTION_IF_ROOM
+								| MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+
 		menu.add("?").setShowAsAction(
 				MenuItem.SHOW_AS_ACTION_IF_ROOM
 						| MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-		
+
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 
 		if (item.getTitle().equals("검색")) {
-			
+
 		} else if (item.getTitle().equals("?")) {
-			
+
 		}
 
 		return super.onOptionsItemSelected(item);
@@ -80,14 +276,17 @@ public class TTMainActivity extends SherlockFragmentActivity implements OnQueryT
 	@Override
 	public boolean onQueryTextSubmit(String query) {
 		System.out.println(searchView.getQuery().toString());
-		
-		SharedPreferences prefs = getSharedPreferences(SEARCH_KEYWORD, MODE_PRIVATE);
+
+		SharedPreferences prefs = getSharedPreferences(SEARCH_KEYWORD,
+				MODE_PRIVATE);
 		SharedPreferences.Editor editor = prefs.edit();
-		editor.putString(searchView.getQuery().toString(), searchView.getQuery().toString());
+		editor.putString(searchView.getQuery().toString(), searchView
+				.getQuery().toString());
 		editor.commit();
-		
+		editor.clear();
+
 		refreshListView();
-		
+
 		return false;
 	}
 
