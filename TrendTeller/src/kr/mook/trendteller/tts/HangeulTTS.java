@@ -11,8 +11,8 @@ public class HangeulTTS {
 	private static TextToSpeech tts;
 
 	
-	public static void read(Context context, String title, String content) {
-		speak (context, title+"     "+content);
+	public static void read(Context context, String title) {
+		speak (context, title);
 	}
 
 	private static void speak(Context context, final String str) {
@@ -55,6 +55,12 @@ public class HangeulTTS {
 	
 	private static boolean isTTSSpeaking() {
 		return (tts != null)?tts.isSpeaking():false;
+	}
+	
+	public static void stop() {
+		if (tts !=  null) {
+			tts.shutdown();
+		}
 	}
 	
 	
