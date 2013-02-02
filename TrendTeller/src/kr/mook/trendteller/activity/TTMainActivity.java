@@ -173,7 +173,7 @@ public class TTMainActivity extends SherlockFragmentActivity implements
 		searchView = new SearchView(getSupportActionBar().getThemedContext());
 //		searchView.setQueryHint("Search for keyword…");
 		searchView.setOnQueryTextListener(this);
-
+		
 		menu.add("추가")
 				.setActionView(searchView)
 				.setShowAsAction(
